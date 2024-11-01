@@ -5,6 +5,7 @@ import (
 	"app/internal/node"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -20,7 +21,7 @@ var (
 		Use:   "memory",
 		Short: "메모리 사용량 조회",
 		Run: func(cmd *cobra.Command, args []string) {
-			kubeConfig := "local"
+			kubeConfig := os.Getenv("KUBE_CONFIG")
 			clientSet, err := config.GetKubeClientSet(kubeConfig)
 			if err != nil {
 				slog.Error("Failed to get kubernetes client", "error", err)
