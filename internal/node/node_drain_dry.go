@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrainDryRun(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
+func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
 	overNodes, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		slog.Error("노드 사용량을 가져오는 중 오류 발생", err)
@@ -45,26 +45,12 @@ func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage
 	slog.Info("Dry run mode 실행")
 	slog.Info("Memory 사용률이 기준 이하인 노드 개수", "percentage", percentage, "count", len(overNodes))
 
-	for _, node := range nodes.Items {
-		provisionerName := node.Labels["karpenter.sh/nodepool"]
-		nodeIP := node.Status.Addresses[0].Address // IP 주소를 가져오는 방식 변경
-
-		for _, overNode := range overNodes {
-			if strings.Contains(nodeIP, overNode.NodeName) {
-				for _, label := range drainNodeLabels {
-					if strings.EqualFold(provisionerName, label) {
-						dryRunResults = append(dryRunResults, model.NodeDrainResult{
-							NodeName:        node.Name,
-							InstanceType:    node.Labels["node.kubernetes.io/instance-type"],
-							ProvisionerName: provisionerName,
-							Percentage:      overNode.NodeUsage,
-						})
-						break
-					}
-				}
-				break
-			}
+	for _, overNode := range overNodes {
+		matchingNodes, err := findMatchingNodes(nodes, overNode, drainNodeLabels)
+		if err != nil {
+			return nil, err
 		}
+		dryRunResults = append(dryRunResults, matchingNodes...)
 	}
 
 	slog.Info("Memory 사용률이 기준 이하인 실제 Dry run 대상 노드 개수", "percentage", percentage, "count", len(dryRunResults))
@@ -79,4 +65,25 @@ func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage
 	}
 
 	return dryRunResults, nil
+}
+
+func findMatchingNodes(nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
+	var results []model.NodeDrainResult
+
+	for _, node := range nodes.Items {
+		provisionerName := node.Labels["karpenter.sh/nodepool"]
+		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {
+			for _, label := range drainNodeLabels {
+				if strings.TrimSpace(provisionerName) == strings.TrimSpace(label) {
+					results = append(results, model.NodeDrainResult{
+						NodeName:        node.Name,
+						InstanceType:    node.Labels["node.kubernetes.io/instance-type"],
+						ProvisionerName: provisionerName,
+						Percentage:      overNode.NodeUsage,
+					})
+				}
+			}
+		}
+	}
+	return results, nil
 }
