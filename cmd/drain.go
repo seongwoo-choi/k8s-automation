@@ -25,7 +25,7 @@ var drainCmd = &cobra.Command{
 	},
 }
 
-func handleNodeDrain(clientSet *kubernetes.Clientset, percentage string) {
+func handleNodeDrain(clientSet kubernetes.Interface, percentage string) {
 	slog.Info("노드 드레인 커맨드를 실행합니다.")
 
 	_, err := node.NodeDrain(clientSet, percentage, node.MemoryUsage)

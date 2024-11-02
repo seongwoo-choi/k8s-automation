@@ -48,7 +48,7 @@ var (
 	}
 )
 
-func handleNodeUsage(clientSet *kubernetes.Clientset, percentage string, usageType node.UsageType, resourceType string) {
+func handleNodeUsage(clientSet kubernetes.Interface, percentage string, usageType node.UsageType, resourceType string) {
 	fmt.Printf("노드 %s 사용량 조회 커맨드를 실행합니다.\n", resourceType)
 	usage, err := node.GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {

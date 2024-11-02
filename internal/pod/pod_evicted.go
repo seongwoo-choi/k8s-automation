@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func EvictPods(clientSet *kubernetes.Clientset, nodeName string) error {
+func EvictPods(clientSet kubernetes.Interface, nodeName string) error {
 	slog.Info("노드에서 pod evict 시작", "nodeName", nodeName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)

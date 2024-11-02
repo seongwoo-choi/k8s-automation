@@ -25,7 +25,7 @@ var dryRunCmd = &cobra.Command{
 	},
 }
 
-func handleDryRun(clientSet *kubernetes.Clientset, percentage string) {
+func handleDryRun(clientSet kubernetes.Interface, percentage string) {
 	slog.Info("노드 드레인 커맨드를 실행합니다.")
 	_, err := node.NodeDrainDryRun(clientSet, percentage, node.MemoryUsage)
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrain(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
+func NodeDrain(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
 	nodeUsages, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func NodeDrain(clientSet *kubernetes.Clientset, percentage string, usageType Usa
 	return handleDrain(clientSet, nodes, nodeUsages, percentage)
 }
 
-func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
+func handleDrain(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
 	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
 	slog.Info("Node drain에 사용할 노드 labels", "labels", strings.Join(drainNodeLabels, ","))
 
@@ -56,7 +56,7 @@ func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNo
 	return results, nil
 }
 
-func drainMatchingNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
+func drainMatchingNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
 	var results []model.NodeDrainResult
 
 	for _, node := range nodes.Items {
@@ -80,7 +80,7 @@ func drainMatchingNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList,
 	return results, nil
 }
 
-func drainSingleNode(clientSet *kubernetes.Clientset, nodeName string) error {
+func drainSingleNode(clientSet kubernetes.Interface, nodeName string) error {
 	if err := CordonNode(clientSet, nodeName); err != nil {
 		return fmt.Errorf("%s 노드를 cordon 하는 중 오류가 발생했습니다.: %w", nodeName, err)
 	}

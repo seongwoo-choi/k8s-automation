@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-func GetKubeClientSet(kubeConfigFile string) (*kubernetes.Clientset, error) {
+func GetKubeClientSet(kubeConfigFile string) (kubernetes.Interface, error) {
 	switch {
 	case kubeConfigFile == "local":
 		var kubeConfig *string
@@ -41,7 +41,7 @@ func GetKubeClientSet(kubeConfigFile string) (*kubernetes.Clientset, error) {
 	}
 }
 
-func getClientSet(config *rest.Config) (*kubernetes.Clientset, error) {
+func getClientSet(config *rest.Config) (kubernetes.Interface, error) {
 	// create the clientSet
 	clientSet, clientSdtErr := kubernetes.NewForConfig(config)
 	if clientSdtErr != nil {
