@@ -1,7 +1,7 @@
 package node
 
 import (
-	"app/dao"
+	"app/model"
 	"context"
 	"log/slog"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrainDryRun(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]dao.NodeDrainResult, error) {
+func NodeDrainDryRun(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
 	overNodes, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		slog.Error("노드 사용량을 가져오는 중 오류 발생", err)
@@ -34,14 +34,14 @@ func NodeDrainDryRun(clientSet *kubernetes.Clientset, percentage string, usageTy
 	return dryRunResults, nil
 }
 
-func handleDryRun(nodes *coreV1.NodeList, overNodes []dao.NodeInfo, percentage string) ([]dao.NodeDrainResult, error) {
+func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
 	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
 	for i, label := range drainNodeLabels {
 		drainNodeLabels[i] = strings.TrimSpace(label)
 	}
 	slog.Info("node drain 에 사용할 노드 labels 은" + strings.Join(drainNodeLabels, ",") + " 입니다.")
 
-	var dryRunResults []dao.NodeDrainResult
+	var dryRunResults []model.NodeDrainResult
 	slog.Info("Dry run mode 실행")
 	slog.Info("Memory 사용률이 기준 이하인 노드 개수", "percentage", percentage, "count", len(overNodes))
 
@@ -53,7 +53,7 @@ func handleDryRun(nodes *coreV1.NodeList, overNodes []dao.NodeInfo, percentage s
 			if strings.Contains(nodeIP, overNode.NodeName) {
 				for _, label := range drainNodeLabels {
 					if strings.EqualFold(provisionerName, label) {
-						dryRunResults = append(dryRunResults, dao.NodeDrainResult{
+						dryRunResults = append(dryRunResults, model.NodeDrainResult{
 							NodeName:        node.Name,
 							InstanceType:    node.Labels["node.kubernetes.io/instance-type"],
 							ProvisionerName: provisionerName,

@@ -1,7 +1,7 @@
 package node
 
 import (
-	"app/dao"
+	"app/model"
 	"context"
 	"fmt"
 	"log/slog"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CordonNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNodes []dao.NodeInfo, percentage string) error {
+func CordonNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) error {
 	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
 	slog.Info("Memory 사용률이 기준 이하인 노드 개수", "percentage", percentage, "count", len(overNodes))
 	for _, node := range nodes.Items {
@@ -24,7 +24,7 @@ func CordonNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNo
 	return nil
 }
 
-func CheckOverNode(clientSet *kubernetes.Clientset, node coreV1.Node, overNodes []dao.NodeInfo, drainNodeLabels []string) error {
+func CheckOverNode(clientSet *kubernetes.Clientset, node coreV1.Node, overNodes []model.NodeInfo, drainNodeLabels []string) error {
 	for _, overNode := range overNodes {
 		provisionerName := node.Labels["karpenter.sh/nodepool"]
 		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {

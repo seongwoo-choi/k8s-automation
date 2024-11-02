@@ -2,13 +2,13 @@ package node
 
 import (
 	"app/config"
-	"app/dao"
+	"app/model"
 	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
 
-	"github.com/prometheus/common/model"
+	prometheusModel "github.com/prometheus/common/model"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -19,7 +19,7 @@ const (
 	MemoryUsage
 )
 
-func GetNodeUsage(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]dao.NodeInfo, error) {
+func GetNodeUsage(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeInfo, error) {
 	query := buildQuery(percentage, usageType)
 
 	prometheusClient, err := config.CreatePrometheusClient()
@@ -48,11 +48,11 @@ func buildQuery(percentage string, usageType UsageType) string {
 	}
 }
 
-func parseUsageResult(vector model.Vector) []dao.NodeInfo {
-	var nodes []dao.NodeInfo
+func parseUsageResult(vector prometheusModel.Vector) []model.NodeInfo {
+	var nodes []model.NodeInfo
 	for _, sample := range vector {
 		nodeName, usage := extractNodeUsage(sample)
-		nodes = append(nodes, dao.NodeInfo{
+		nodes = append(nodes, model.NodeInfo{
 			NodeName:  nodeName,
 			NodeUsage: usage,
 		})
@@ -60,7 +60,7 @@ func parseUsageResult(vector model.Vector) []dao.NodeInfo {
 	return nodes
 }
 
-func extractNodeUsage(sample *model.Sample) (string, float64) {
+func extractNodeUsage(sample *prometheusModel.Sample) (string, float64) {
 	nodeName := string(sample.Metric["instance"])
 	nodeName = nodeName[0:strings.Index(nodeName, ":")]
 	usage, _ := strconv.ParseFloat(sample.Value.String(), 64)

@@ -1,8 +1,8 @@
 package node
 
 import (
-	"app/dao"
 	"app/internal/pod"
+	"app/model"
 	"context"
 	"fmt"
 	"log/slog"
@@ -16,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrain(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]dao.NodeDrainResult, error) {
+func NodeDrain(clientSet *kubernetes.Clientset, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
 	nodeUsages, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func NodeDrain(clientSet *kubernetes.Clientset, percentage string, usageType Usa
 	return handleDrain(clientSet, nodes, nodeUsages, percentage)
 }
 
-func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNodes []dao.NodeInfo, percentage string) ([]dao.NodeDrainResult, error) {
+func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
 	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
 	slog.Info("Node drain에 사용할 노드 labels", "labels", strings.Join(drainNodeLabels, ","))
 
@@ -42,7 +42,7 @@ func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNo
 		return overNodes[i].NodeUsage < overNodes[j].NodeUsage
 	})
 
-	var results []dao.NodeDrainResult
+	var results []model.NodeDrainResult
 	for _, overNode := range overNodes {
 		drainedNodes, err := drainMatchingNodes(clientSet, nodes, overNode, drainNodeLabels)
 		if err != nil {
@@ -56,8 +56,8 @@ func handleDrain(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNo
 	return results, nil
 }
 
-func drainMatchingNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNode dao.NodeInfo, drainNodeLabels []string) ([]dao.NodeDrainResult, error) {
-	var results []dao.NodeDrainResult
+func drainMatchingNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
+	var results []model.NodeDrainResult
 
 	for _, node := range nodes.Items {
 		provisionerName := node.Labels["karpenter.sh/nodepool"]
@@ -67,7 +67,7 @@ func drainMatchingNodes(clientSet *kubernetes.Clientset, nodes *coreV1.NodeList,
 					if err := drainSingleNode(clientSet, node.Name); err != nil {
 						return nil, err
 					}
-					results = append(results, dao.NodeDrainResult{
+					results = append(results, model.NodeDrainResult{
 						NodeName:        node.Name,
 						InstanceType:    node.Labels["beta.kubernetes.io/instance-type"],
 						ProvisionerName: provisionerName,
