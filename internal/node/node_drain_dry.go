@@ -35,7 +35,7 @@ func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageTyp
 }
 
 func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
-	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
+	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABEL_VALUE"), ",")
 	for i, label := range drainNodeLabels {
 		drainNodeLabels[i] = strings.TrimSpace(label)
 	}
@@ -71,7 +71,7 @@ func findMatchingNodes(nodes *coreV1.NodeList, overNode model.NodeInfo, drainNod
 	var results []model.NodeDrainResult
 
 	for _, node := range nodes.Items {
-		provisionerName := node.Labels["karpenter.sh/nodepool"]
+		provisionerName := node.Labels[os.Getenv("DRAIN_NODE_LABEL_KEY")]
 		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {
 			for _, label := range drainNodeLabels {
 				if strings.TrimSpace(provisionerName) == strings.TrimSpace(label) {

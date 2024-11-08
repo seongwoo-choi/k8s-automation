@@ -35,7 +35,7 @@ func NodeDrain(clientSet kubernetes.Interface, percentage string, usageType Usag
 }
 
 func handleDrain(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
-	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
+	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABEL_VALUE"), ",")
 	slog.Info("Node drain에 사용할 노드 labels", "labels", strings.Join(drainNodeLabels, ","))
 
 	sort.Slice(overNodes, func(i, j int) bool {
@@ -60,7 +60,7 @@ func drainMatchingNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, 
 	var results []model.NodeDrainResult
 
 	for _, node := range nodes.Items {
-		provisionerName := node.Labels["karpenter.sh/nodepool"]
+		provisionerName := node.Labels[os.Getenv("DRAIN_NODE_LABEL_KEY")]
 		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {
 			for _, label := range drainNodeLabels {
 				if strings.TrimSpace(provisionerName) == strings.TrimSpace(label) {

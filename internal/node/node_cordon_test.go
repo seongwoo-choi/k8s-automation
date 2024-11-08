@@ -3,6 +3,7 @@ package node
 import (
 	"app/model"
 	"context"
+	"os"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -51,7 +52,7 @@ func TestCordonNode(t *testing.T) {
 func TestCheckOverNode(t *testing.T) {
 	// 테스트 설정
 	clientset := fake.NewSimpleClientset()
-	labels := map[string]string{"karpenter.sh/nodepool": "test-pool"}
+	labels := map[string]string{os.Getenv("DRAIN_NODE_LABEL_KEY"): "test-pool"}
 	annotations := map[string]string{"alpha.kubernetes.io/provided-node-ip": "192.168.1.1"}
 	node := CreateMockNode("test-node", labels, annotations)
 	clientset.CoreV1().Nodes().Create(context.Background(), node, metaV1.CreateOptions{})

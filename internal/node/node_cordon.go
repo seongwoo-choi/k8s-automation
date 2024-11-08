@@ -14,7 +14,7 @@ import (
 )
 
 func CordonNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) error {
-	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
+	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABEL_VALUE"), ",")
 	slog.Info("Memory 사용률이 기준 이하인 노드 개수", "percentage", percentage, "count", len(overNodes))
 	for _, node := range nodes.Items {
 		if err := CheckOverNode(clientSet, node, overNodes, drainNodeLabels); err != nil {
@@ -26,7 +26,7 @@ func CordonNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNod
 
 func CheckOverNode(clientSet kubernetes.Interface, node coreV1.Node, overNodes []model.NodeInfo, drainNodeLabels []string) error {
 	for _, overNode := range overNodes {
-		provisionerName := node.Labels["karpenter.sh/nodepool"]
+		provisionerName := node.Labels[os.Getenv("DRAIN_NODE_LABEL_KEY")]
 		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {
 			for _, label := range drainNodeLabels {
 				if strings.TrimSpace(provisionerName) == strings.TrimSpace(label) {

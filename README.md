@@ -26,7 +26,8 @@ go run main.go dry-run \
   --percentage 30 \
   --prometheus-address "http://localhost:8080/prometheus" \
   --prometheus-org-id "organzation-dev" \
-  --drain-node-labels "my-workload-label1, my-workload-label2" \
+  --drain-node-label-key "my-workload-label-key" \
+  --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
   --kube-config "local" 
 ```
@@ -37,7 +38,8 @@ go run main.go drain \
   --percentage 30 \
   --prometheus-address "http://localhost:8080/prometheus" \
   --prometheus-org-id "organzation-dev" \
-  --drain-node-labels "my-workload-label1, my-workload-label2" \
+  --drain-node-label-key "my-workload-label-key" \
+  --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
   --kube-config "local"
 ```
@@ -48,7 +50,8 @@ go run main.go usage disk \
   --percentage 30 \
   --prometheus-address "http://localhost:8080/prometheus" \
   --prometheus-org-id "organzation-dev" \
-  --drain-node-labels "my-workload-label1, my-workload-label2" \
+  --drain-node-label-key "my-workload-label-key" \
+  --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
   --kube-config "local"
 ```
@@ -59,7 +62,8 @@ go run main.go usage memory \
   --percentage 30 \
   --prometheus-address "http://localhost:8080/prometheus" \
   --prometheus-org-id "organzation-dev" \
-  --drain-node-labels "my-workload-label1, my-workload-label2" \
+  --drain-node-label-key "my-workload-label-key" \
+  --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
   --kube-config "local"
 ```
