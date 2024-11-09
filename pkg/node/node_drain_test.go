@@ -22,7 +22,7 @@ type MockKubernetesInterface struct {
 func TestDrainSingleNode(t *testing.T) {
 	t.Parallel()
 	if testing.Short() {
-		t.Skip("skipping test in short mode.")
+		t.Skip("단축 모드에서 테스트를 건너뜁니다.")
 	}
 
 	t.Run("성공적인 노드 드레인", func(t *testing.T) {

@@ -1,7 +1,7 @@
 package node
 
 import (
-	"app/model"
+	"app/types"
 	"context"
 	"log/slog"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
+func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]types.NodeDrainResult, error) {
 	overNodes, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		slog.Error("노드 사용량을 가져오는 중 오류 발생", err)
@@ -34,14 +34,14 @@ func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageTyp
 	return dryRunResults, nil
 }
 
-func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
-	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABEL_VALUE"), ",")
+func handleDryRun(nodes *coreV1.NodeList, overNodes []types.NodeInfo, percentage string) ([]types.NodeDrainResult, error) {
+	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
 	for i, label := range drainNodeLabels {
 		drainNodeLabels[i] = strings.TrimSpace(label)
 	}
 	slog.Info("node drain 에 사용할 노드 labels 은" + strings.Join(drainNodeLabels, ",") + " 입니다.")
 
-	var dryRunResults []model.NodeDrainResult
+	var dryRunResults []types.NodeDrainResult
 	slog.Info("Dry run mode 실행")
 	slog.Info("Memory 사용률이 기준 이하인 노드 개수", "percentage", percentage, "count", len(overNodes))
 
@@ -67,15 +67,15 @@ func handleDryRun(nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage
 	return dryRunResults, nil
 }
 
-func findMatchingNodes(nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
-	var results []model.NodeDrainResult
+func findMatchingNodes(nodes *coreV1.NodeList, overNode types.NodeInfo, drainNodeLabels []string) ([]types.NodeDrainResult, error) {
+	var results []types.NodeDrainResult
 
 	for _, node := range nodes.Items {
 		provisionerName := node.Labels[os.Getenv("DRAIN_NODE_LABEL_KEY")]
 		if strings.Contains(node.Annotations["alpha.kubernetes.io/provided-node-ip"], overNode.NodeName) {
 			for _, label := range drainNodeLabels {
 				if strings.TrimSpace(provisionerName) == strings.TrimSpace(label) {
-					results = append(results, model.NodeDrainResult{
+					results = append(results, types.NodeDrainResult{
 						NodeName:        node.Name,
 						InstanceType:    node.Labels["node.kubernetes.io/instance-type"],
 						ProvisionerName: provisionerName,

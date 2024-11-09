@@ -1,8 +1,8 @@
 package node
 
 import (
-	"app/internal/pod"
-	"app/model"
+	"app/pkg/pod"
+	"app/types"
 	"context"
 	"fmt"
 	"log/slog"
@@ -16,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NodeDrain(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeDrainResult, error) {
+func NodeDrain(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]types.NodeDrainResult, error) {
 	nodeUsages, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
 		return nil, err
@@ -34,15 +34,16 @@ func NodeDrain(clientSet kubernetes.Interface, percentage string, usageType Usag
 	return handleDrain(clientSet, nodes, nodeUsages, percentage)
 }
 
-func handleDrain(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNodes []model.NodeInfo, percentage string) ([]model.NodeDrainResult, error) {
-	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABEL_VALUE"), ",")
-	slog.Info("Node drain에 사용할 노드 labels", "labels", strings.Join(drainNodeLabels, ","))
+func handleDrain(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNodes []types.NodeInfo, percentage string) ([]types.NodeDrainResult, error) {
+	drainNodeLabels := strings.Split(os.Getenv("DRAIN_NODE_LABELS"), ",")
+	slog.Info("Node drain에 사용할 노드 레이블 키", "key", os.Getenv("DRAIN_NODE_LABEL_KEY"))
+	slog.Info("Node drain에 사용할 노드 레이블 값", "value", strings.Join(drainNodeLabels, ","))
 
 	sort.Slice(overNodes, func(i, j int) bool {
 		return overNodes[i].NodeUsage < overNodes[j].NodeUsage
 	})
 
-	var results []model.NodeDrainResult
+	var results []types.NodeDrainResult
 	for _, overNode := range overNodes {
 		drainedNodes, err := drainMatchingNodes(clientSet, nodes, overNode, drainNodeLabels)
 		if err != nil {
@@ -56,8 +57,8 @@ func handleDrain(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNod
 	return results, nil
 }
 
-func drainMatchingNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNode model.NodeInfo, drainNodeLabels []string) ([]model.NodeDrainResult, error) {
-	var results []model.NodeDrainResult
+func drainMatchingNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, overNode types.NodeInfo, drainNodeLabels []string) ([]types.NodeDrainResult, error) {
+	var results []types.NodeDrainResult
 
 	for _, node := range nodes.Items {
 		provisionerName := node.Labels[os.Getenv("DRAIN_NODE_LABEL_KEY")]
@@ -67,7 +68,7 @@ func drainMatchingNodes(clientSet kubernetes.Interface, nodes *coreV1.NodeList, 
 					if err := drainSingleNode(clientSet, node.Name); err != nil {
 						return nil, err
 					}
-					results = append(results, model.NodeDrainResult{
+					results = append(results, types.NodeDrainResult{
 						NodeName:        node.Name,
 						InstanceType:    node.Labels["beta.kubernetes.io/instance-type"],
 						ProvisionerName: provisionerName,

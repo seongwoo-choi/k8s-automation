@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"app/config"
-	"app/internal/node"
+	"app/pkg/node"
 	"fmt"
 	"log/slog"
 	"os"
@@ -24,7 +24,7 @@ var (
 			kubeConfig := os.Getenv("KUBE_CONFIG")
 			clientSet, err := config.GetKubeClientSet(kubeConfig)
 			if err != nil {
-				slog.Error("Failed to get kubernetes client", "error", err)
+				slog.Error("쿠버네티스 클라이언트를 가져오는 중 오류가 발생했습니다.", err)
 				return
 			}
 
@@ -39,7 +39,7 @@ var (
 			kubeConfig := "local"
 			clientSet, err := config.GetKubeClientSet(kubeConfig)
 			if err != nil {
-				slog.Error("Failed to get kubernetes client", "error", err)
+				slog.Error("쿠버네티스 클라이언트를 가져오는 중 오류가 발생했습니다.", err)
 				return
 			}
 

@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"app/config"
-	"app/internal/node"
+	"app/pkg/node"
+	"app/pkg/notification"
 	"log/slog"
 	"os"
 
@@ -17,7 +18,7 @@ var drainCmd = &cobra.Command{
 		kubeConfig := os.Getenv("KUBE_CONFIG")
 		clientSet, err := config.GetKubeClientSet(kubeConfig)
 		if err != nil {
-			slog.Error("Failed to get kubernetes client", "error", err)
+			slog.Error("쿠버네티스 클라이언트를 가져오는 중 오류가 발생했습니다.", err)
 			return
 		}
 
@@ -28,12 +29,20 @@ var drainCmd = &cobra.Command{
 func handleNodeDrain(clientSet kubernetes.Interface, percentage string) {
 	slog.Info("노드 드레인 커맨드를 실행합니다.")
 
-	_, err := node.NodeDrain(clientSet, percentage, node.MemoryUsage)
+	results, err := node.NodeDrain(clientSet, percentage, node.MemoryUsage)
 	if err != nil {
-		slog.Error("Error during node drain: ", err)
+		slog.Error("노드를 드레인 하는 중 오류가 발생했습니다.: ", err)
+		err = notification.SendNodeDrainError(err)
+		if err != nil {
+			slog.Error("슬랙 알람을 보내는 중 오류가 발생했습니다.: ", err)
+		}
 		return
 	}
-	// slack 알람 받기
+
+	err = notification.SendNodeDrainComplete(results)
+	if err != nil {
+		slog.Error("슬랙 알람을 보내는 중 오류가 발생했습니다.: ", err)
+	}
 }
 
 func init() {

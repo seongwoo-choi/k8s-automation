@@ -13,9 +13,9 @@ import (
 
 func GetKubeClientSet(kubeConfigFile string) (kubernetes.Interface, error) {
 	switch {
-	case kubeConfigFile == "local":
+	case kubeConfigFile == "github_action", kubeConfigFile == "local":
 		var kubeConfig *string
-		// local 에서 실행 시 config 를 가져올 때 사용
+		// github_action 에서 실행 시 config 를 가져올 때 사용
 		// kubeConfig 경로를 지정하지 않으면 $HOME/.kube/config 로 지정
 		if home := homedir.HomeDir(); home != "" {
 			kubeConfig = flag.String("kubeConfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeConfig file")

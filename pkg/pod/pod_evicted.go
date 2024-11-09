@@ -28,9 +28,6 @@ func EvictPods(clientSet kubernetes.Interface, nodeName string) error {
 
 	for _, pod := range pods {
 		grace := &gracePeriod
-		// if isPodUnschedulable(pod) {
-		// 	grace = &immediate
-		// }
 
 		slog.Info("Pod 삭제 중", "nodeName", nodeName, "podName", pod.Name, "gracePeriod", *grace)
 		err := clientSet.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metaV1.DeleteOptions{

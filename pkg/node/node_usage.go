@@ -2,7 +2,7 @@ package node
 
 import (
 	"app/config"
-	"app/model"
+	"app/types"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -19,7 +19,7 @@ const (
 	MemoryUsage
 )
 
-func GetNodeUsage(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]model.NodeInfo, error) {
+func GetNodeUsage(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]types.NodeInfo, error) {
 	query := buildQuery(percentage, usageType)
 
 	prometheusClient, err := config.CreatePrometheusClient()
@@ -48,11 +48,11 @@ func buildQuery(percentage string, usageType UsageType) string {
 	}
 }
 
-func parseUsageResult(vector prometheusModel.Vector) []model.NodeInfo {
-	var nodes []model.NodeInfo
+func parseUsageResult(vector prometheusModel.Vector) []types.NodeInfo {
+	var nodes []types.NodeInfo
 	for _, sample := range vector {
 		nodeName, usage := extractNodeUsage(sample)
-		nodes = append(nodes, model.NodeInfo{
+		nodes = append(nodes, types.NodeInfo{
 			NodeName:  nodeName,
 			NodeUsage: usage,
 		})

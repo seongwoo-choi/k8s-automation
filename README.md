@@ -29,7 +29,8 @@ go run main.go dry-run \
   --drain-node-label-key "my-workload-label-key" \
   --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
-  --kube-config "local" 
+  --kube-config "local" \
+  --cluster-name "cluster-name"
 ```
 
 node drain
@@ -41,7 +42,8 @@ go run main.go drain \
   --drain-node-label-key "my-workload-label-key" \
   --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
-  --kube-config "local"
+  --kube-config "local" \
+  --cluster-name "cluster-name"
 ```
 
 disk usage 확인
@@ -53,7 +55,8 @@ go run main.go usage disk \
   --drain-node-label-key "my-workload-label-key" \
   --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
-  --kube-config "local"
+  --kube-config "local" \
+  --cluster-name "cluster-name"
 ```
 
 memory usage 확인
@@ -65,7 +68,8 @@ go run main.go usage memory \
   --drain-node-label-key "my-workload-label-key" \
   --drain-node-label-value "my-workload-label1, my-workload-label2" \
   --slack-webhook-url "https://hooks.slack.com/services/xxx" \
-  --kube-config "local"
+  --kube-config "local" \
+  --cluster-name "cluster-name"
 ```
 
 ## 워크로드 노드 정리 플로우
