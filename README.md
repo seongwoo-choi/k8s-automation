@@ -12,7 +12,7 @@ prometheus 만을 사용할 경우 config/prometheus_client.go 파일 수정 후
 
 kube context 를 변경하여 EKS 워크로드 노드를 드레인하고 싶은 클러스터의 context 로 위치시킵니다.
 
-K9S 혹은 Open Lens 를 사용하여 deployment 접근, mimir 검색 후 8080:8080 으로 포트포워딩
+K9S 혹은 Open Lens 를 사용하여 deployment 접근, mimir 혹은 prometheus-server 를 검색 후 8080:8080 으로 포트포워딩
 
 포트포워딩 설정 이후 아래 스크립트를 실행합니다.
 
