@@ -10,6 +10,7 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -137,8 +138,21 @@ func checkPDB(ctx context.Context, clientSet kubernetes.Interface, pod coreV1.Po
 	}
 
 	for _, pdb := range pdbList.Items {
-		if pdb.Status.DisruptionsAllowed < 1 {
-			return fmt.Errorf("PDB %s에 의해 eviction이 제한됨", pdb.Name)
+		selector, err := metaV1.LabelSelectorAsSelector(pdb.Spec.Selector)
+		if err != nil {
+			slog.ErrorContext(ctx, "PDB 레이블 선택자 변환 실패",
+				"pdb", pdb.Name,
+				"error", err)
+			continue
+		}
+		if selector.Matches(labels.Set(pod.Labels)) {
+			if pdb.Status.DisruptionsAllowed < 1 {
+				return fmt.Errorf("PDB %s에 의해 eviction이 제한됨 (현재 허용된 disruption: %d)",
+					pdb.Name, pdb.Status.DisruptionsAllowed)
+			}
+			slog.InfoContext(ctx, "PDB 체크 통과",
+				"pdb", pdb.Name,
+				"allowedDisruptions", pdb.Status.DisruptionsAllowed)
 		}
 	}
 
