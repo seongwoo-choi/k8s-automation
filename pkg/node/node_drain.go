@@ -86,7 +86,15 @@ func drainSingleNode(clientSet kubernetes.Interface, nodeName string) error {
 		return fmt.Errorf("%s 노드를 cordon 하는 중 오류가 발생했습니다.: %w", nodeName, err)
 	}
 
-	if err := pod.EvictPods(clientSet, nodeName); err != nil {
+	config := &pod.EvictionConfig{
+		MaxConcurrentEvictions: 2,
+		MaxRetries:             3,
+		RetryBackoffDuration:   5 * time.Second,
+		PodDeletionTimeout:     2 * time.Minute,
+		CheckInterval:          2 * time.Second,
+	}
+
+	if err := pod.EvictPods(clientSet, nodeName, config); err != nil {
 		return fmt.Errorf("노드 %s 에서 파드를 제거하는 중 오류가 발생했습니다.: %w", nodeName, err)
 	}
 

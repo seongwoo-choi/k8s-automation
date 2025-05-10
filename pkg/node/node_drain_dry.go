@@ -15,19 +15,19 @@ import (
 func NodeDrainDryRun(clientSet kubernetes.Interface, percentage string, usageType UsageType) ([]types.NodeDrainResult, error) {
 	overNodes, err := GetNodeUsage(clientSet, percentage, usageType)
 	if err != nil {
-		slog.Error("노드 사용량을 가져오는 중 오류 발생", err)
+		slog.Error("노드 사용량을 가져오는 중 오류 발생", "error", err)
 		return nil, err
 	}
 
 	nodes, err := clientSet.CoreV1().Nodes().List(context.Background(), metaV1.ListOptions{})
 	if err != nil {
-		slog.Error("노드 목록을 가져오는 중 오류 발생", err)
+		slog.Error("노드 목록을 가져오는 중 오류 발생", "error", err)
 		return nil, err
 	}
 
 	dryRunResults, err := handleDryRun(nodes, overNodes, percentage)
 	if err != nil {
-		slog.Error("Node Drain Dry Run 처리 중 오류 발생", err)
+		slog.Error("Node Drain Dry Run 처리 중 오류 발생", "error", err)
 		return nil, err
 	}
 

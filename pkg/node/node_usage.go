@@ -24,13 +24,13 @@ func GetNodeUsage(clientSet kubernetes.Interface, percentage string, usageType U
 
 	prometheusClient, err := config.CreatePrometheusClient()
 	if err != nil {
-		slog.Error("Prometheus 클라이언트 생성 중 오류 발생", err)
+		slog.Error("Prometheus 클라이언트 생성 중 오류 발생", "error", err)
 		return nil, err
 	}
 
 	result, err := config.QueryPrometheus(prometheusClient, query)
 	if err != nil {
-		slog.Error("Prometheus 쿼리 중 오류 발생", err)
+		slog.Error("Prometheus 쿼리 중 오류 발생", "error", err)
 		return nil, err
 	}
 
